@@ -1,29 +1,29 @@
 import cellShaderCode from './cellShader.wgsl';
 
-const canvas = document.querySelector("canvas")! as HTMLCanvasElement;;
+const canvas = document.querySelector("canvas")! as HTMLCanvasElement;
 if (!navigator.gpu) {
     throw new Error("WebGPU not supported on this browser.");
 }
-const adapter = await navigator.gpu.requestAdapter();
+const adapter: GPUAdapter | null = await navigator.gpu.requestAdapter();
 if (!adapter) {
     throw new Error("No appropriate GPUAdapter found.");
 }
 const device = await adapter.requestDevice();
 
-const context = canvas.getContext("webgpu");
+const context: GPUCanvasContext | null = canvas.getContext("webgpu");
 if (!context) {
     throw new Error("Unable to obtain WebGPU context.");
 }
 
-const canvasFormat = navigator.gpu.getPreferredCanvasFormat();
+const canvasFormat: GPUTextureFormat = navigator.gpu.getPreferredCanvasFormat();
 context.configure({
     device: device,
     format: canvasFormat,
 });
 
-const encoder = device.createCommandEncoder();
+const encoder: GPUCommandEncoder = device.createCommandEncoder();
 
-const vertices = new Float32Array([
+const vertices: Float32Array = new Float32Array([
     //   X,    Y,
     -0.8, -0.8, // Triangle 1 (Blue)
     0.8, -0.8,
@@ -34,7 +34,7 @@ const vertices = new Float32Array([
     -0.8, 0.8,
 ]);
 
-const vertexBuffer = device.createBuffer({
+const vertexBuffer: GPUBuffer = device.createBuffer({
     label: "Cell vertices",
     size: vertices.byteLength,
     usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
@@ -51,12 +51,12 @@ const vertexBufferLayout: GPUVertexBufferLayout = {
     }],
 };
 
-const cellShaderModule = device.createShaderModule({
+const cellShaderModule: GPUShaderModule = device.createShaderModule({
     label: "Cell shader",
     code: cellShaderCode
 });
 
-const cellPipeline = device.createRenderPipeline({
+const cellPipeline: GPURenderPipeline = device.createRenderPipeline({
     label: "Cell pipeline",
     layout: "auto",
     vertex: {
@@ -73,7 +73,7 @@ const cellPipeline = device.createRenderPipeline({
     }
 });
 
-const pass = encoder.beginRenderPass({
+const pass: GPURenderPassEncoder = encoder.beginRenderPass({
     colorAttachments: [{
         view: context.getCurrentTexture().createView(),
         loadOp: "clear",
