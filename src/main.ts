@@ -1,3 +1,5 @@
+import cellShaderCode from './cellShader.wgsl';
+
 const canvas = document.querySelector("canvas")! as HTMLCanvasElement;;
 if (!navigator.gpu) {
     throw new Error("WebGPU not supported on this browser.");
@@ -62,9 +64,11 @@ const vertexBufferLayout = {
     }],
 };
 
+console.log(cellShaderCode);
+
 const cellShaderModule = device.createShaderModule({
     label: "Cell shader",
-    code: ``
+    code: cellShaderCode
 });
 
 export { };

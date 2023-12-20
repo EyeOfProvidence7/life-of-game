@@ -13,14 +13,19 @@ module.exports = {
             {
                 test: /\.ts$/,
                 exclude: /node_modules/,
-                use: {
-                    loader: "ts-loader"
-                }
+                use: "ts-loader"
+            },
+            {
+                test: /\.wgsl$/,
+                exclude: /node_modules/,
+                use: 'raw-loader',
             }
         ]
     },
 
     resolve: {
         extensions: [".ts"]
-    }
+    },
+    
+    devtool: 'inline-source-map', 
 }
