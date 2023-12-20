@@ -23,19 +23,6 @@ context.configure({
 
 const encoder = device.createCommandEncoder();
 
-const pass = encoder.beginRenderPass({
-    colorAttachments: [{
-        view: context.getCurrentTexture().createView(),
-        loadOp: "clear",
-        clearValue: { r: 0, g: 0, b: 0.4, a: 1 },
-        storeOp: "store",
-    }]
-});
-
-pass.end();
-
-device.queue.submit([encoder.finish()]);
-
 const vertices = new Float32Array([
     //   X,    Y,
     -0.8, -0.8, // Triangle 1 (Blue)
@@ -55,7 +42,7 @@ const vertexBuffer = device.createBuffer({
 
 device.queue.writeBuffer(vertexBuffer, /*bufferOffset=*/0, vertices);
 
-const vertexBufferLayout = {
+const vertexBufferLayout: GPUVertexBufferLayout = {
     arrayStride: 8,
     attributes: [{
         format: "float32x2",
@@ -64,12 +51,44 @@ const vertexBufferLayout = {
     }],
 };
 
-console.log(cellShaderCode);
-
 const cellShaderModule = device.createShaderModule({
     label: "Cell shader",
     code: cellShaderCode
 });
+
+const cellPipeline = device.createRenderPipeline({
+    label: "Cell pipeline",
+    layout: "auto",
+    vertex: {
+        module: cellShaderModule,
+        entryPoint: "vertexMain",
+        buffers: [vertexBufferLayout]
+    },
+    fragment: {
+        module: cellShaderModule,
+        entryPoint: "fragmentMain",
+        targets: [{
+            format: canvasFormat
+        }]
+    }
+});
+
+const pass = encoder.beginRenderPass({
+    colorAttachments: [{
+        view: context.getCurrentTexture().createView(),
+        loadOp: "clear",
+        clearValue: { r: 0, g: 0, b: 0.4, a: 1 },
+        storeOp: "store",
+    }]
+});
+
+pass.setPipeline(cellPipeline);
+pass.setVertexBuffer(0, vertexBuffer);
+pass.draw(vertices.length / 2); // 6 vertices
+
+pass.end();
+
+device.queue.submit([encoder.finish()]);
 
 export { };
 
