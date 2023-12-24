@@ -1,5 +1,7 @@
 import cellShaderCode from './cellShader.wgsl';
 
+const GRID_SIZE = 32;
+
 const canvas = document.querySelector("canvas")! as HTMLCanvasElement;
 if (!navigator.gpu) {
     throw new Error("WebGPU not supported on this browser.");
@@ -40,7 +42,16 @@ const vertexBuffer: GPUBuffer = device.createBuffer({
     usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
 });
 
-device.queue.writeBuffer(vertexBuffer, /*bufferOffset=*/0, vertices);
+// Create a uniform buffer that describes the grid.
+const uniformArray: Float32Array = new Float32Array([GRID_SIZE, GRID_SIZE]);
+const uniformBuffer: GPUBuffer = device.createBuffer({
+    label: "Grid Uniforms",
+    size: uniformArray.byteLength,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+});
+
+device.queue.writeBuffer(vertexBuffer, 0, vertices);
+device.queue.writeBuffer(uniformBuffer, 0, uniformArray);
 
 const vertexBufferLayout: GPUVertexBufferLayout = {
     arrayStride: 8,
@@ -73,6 +84,15 @@ const cellPipeline: GPURenderPipeline = device.createRenderPipeline({
     }
 });
 
+const bindGroup: GPUBindGroup = device.createBindGroup({
+    label: "Cell renderer bind group",
+    layout: cellPipeline.getBindGroupLayout(0),
+    entries: [{
+        binding: 0,
+        resource: { buffer: uniformBuffer }
+    }],
+});
+
 const pass: GPURenderPassEncoder = encoder.beginRenderPass({
     colorAttachments: [{
         view: context.getCurrentTexture().createView(),
@@ -84,7 +104,8 @@ const pass: GPURenderPassEncoder = encoder.beginRenderPass({
 
 pass.setPipeline(cellPipeline);
 pass.setVertexBuffer(0, vertexBuffer);
-pass.draw(vertices.length / 2); // 6 vertices
+pass.setBindGroup(0, bindGroup);
+pass.draw(vertices.length / 2, GRID_SIZE * GRID_SIZE);
 
 pass.end();
 
