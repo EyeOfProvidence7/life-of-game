@@ -4,7 +4,13 @@ import computeShaderCode from './computeShader.wgsl'
 const GRID_SIZE = 128;
 const WORKGROUP_SIZE = 8;
 
-const context: GPUCanvasContext | null = await configureContext();
+const context: GPUCanvasContext | null = getContext();
+const canvasFormat: GPUTextureFormat = navigator.gpu.getPreferredCanvasFormat();
+const device = await getDevice();
+context.configure({
+    device: device,
+    format: canvasFormat,
+});
 
 const vertices: Float32Array = new Float32Array([
     //   X,    Y,
@@ -161,19 +167,9 @@ const simulationPipeline = device.createComputePipeline({
 const UPDATE_INTERVAL = 200; // Update every 200ms (5 times/sec)
 let step = 0; // Track how many simulation steps have been run
 
-async function configureContext() {
-    const context: GPUCanvasContext | null = getContext();
-    const canvasFormat: GPUTextureFormat = navigator.gpu.getPreferredCanvasFormat();
-    const device = await getDevice();
-    context.configure({
-        device: device,
-        format: canvasFormat,
-    });
-    return context;
-}
-
 function getContext() {
     const canvas = document.querySelector("canvas")! as HTMLCanvasElement;
+
     const context: GPUCanvasContext | null = canvas.getContext("webgpu");
     if (!context) {
         throw new Error("Unable to obtain WebGPU context.");
