@@ -1,7 +1,7 @@
 import cellShaderCode from './cellShader.wgsl';
 import computeShaderCode from './computeShader.wgsl'
 
-const GRID_SIZE = 32;
+const GRID_SIZE = 128;
 const WORKGROUP_SIZE = 8;
 
 const canvas = document.querySelector("canvas")! as HTMLCanvasElement;
