@@ -4,22 +4,9 @@ import computeShaderCode from './computeShader.wgsl'
 const GRID_SIZE = 128;
 const WORKGROUP_SIZE = 8;
 
-const canvas = document.querySelector("canvas")! as HTMLCanvasElement;
-if (!navigator.gpu) {
-    throw new Error("WebGPU not supported on this browser.");
-}
-const adapter: GPUAdapter | null = await navigator.gpu.requestAdapter();
-if (!adapter) {
-    throw new Error("No appropriate GPUAdapter found.");
-}
-const device = await adapter.requestDevice();
-
-const context: GPUCanvasContext | null = canvas.getContext("webgpu");
-if (!context) {
-    throw new Error("Unable to obtain WebGPU context.");
-}
-
+const context: GPUCanvasContext | null = getContext();
 const canvasFormat: GPUTextureFormat = navigator.gpu.getPreferredCanvasFormat();
+const device = await getDevice();
 context.configure({
     device: device,
     format: canvasFormat,
@@ -179,6 +166,28 @@ const simulationPipeline = device.createComputePipeline({
 
 const UPDATE_INTERVAL = 200; // Update every 200ms (5 times/sec)
 let step = 0; // Track how many simulation steps have been run
+
+function getContext() {
+    const canvas = document.querySelector("canvas")! as HTMLCanvasElement;
+
+    const context: GPUCanvasContext | null = canvas.getContext("webgpu");
+    if (!context) {
+        throw new Error("Unable to obtain WebGPU context.");
+    }
+    return context;
+}
+
+async function getDevice() {
+    if (!navigator.gpu) {
+        throw new Error("WebGPU not supported on this browser.");
+    }
+    const adapter: GPUAdapter | null = await navigator.gpu.requestAdapter();
+    if (!adapter) {
+        throw new Error("No appropriate GPUAdapter found.");
+    }
+    const device = await adapter.requestDevice();
+    return device;
+}
 
 // Move all of our rendering code into a function
 function updateGrid() {
