@@ -1,7 +1,7 @@
 import cellShaderCode from './cellShader.wgsl';
 import computeShaderCode from './computeShader.wgsl'
 
-const GRID_SIZE = 128;
+const GRID_SIZE = 512;
 const WORKGROUP_SIZE = 8;
 
 const device = await getDevice();
@@ -160,7 +160,7 @@ const simulationPipeline = device.createComputePipeline({
     }
 });
 
-const UPDATE_INTERVAL = 200; // Update every 200ms (5 times/sec)
+const UPDATE_INTERVAL = 41.6666666667; // Update every 200ms (5 times/sec)
 let step = 0; // Track how many simulation steps have been run
 
 function getAndConfigureContext() {
