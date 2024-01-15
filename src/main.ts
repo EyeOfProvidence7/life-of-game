@@ -6,7 +6,7 @@ const WORKGROUP_SIZE = 8;
 
 const device = await getDevice();
 const canvasFormat: GPUTextureFormat = navigator.gpu.getPreferredCanvasFormat();
-const context: GPUCanvasContext | null = getAndConfigureContext();
+const context: GPUCanvasContext | null = configureAndGetContext();
 
 const vertices: Float32Array = new Float32Array([
     //   X,    Y,
@@ -163,7 +163,7 @@ const simulationPipeline = device.createComputePipeline({
 const UPDATE_INTERVAL = 41.6666666667; // Update every 200ms (5 times/sec)
 let step = 0; // Track how many simulation steps have been run
 
-function getAndConfigureContext() {
+function configureAndGetContext() {
     const canvas = document.querySelector("canvas")! as HTMLCanvasElement;
     const context: GPUCanvasContext | null = canvas.getContext("webgpu");
     if (!context) {
