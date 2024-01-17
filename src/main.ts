@@ -4,6 +4,31 @@ import computeShaderCode from './computeShader.wgsl'
 const GRID_SIZE = 512;
 const WORKGROUP_SIZE = 8;
 
+function configureAndGetContext() {
+    const canvas = document.querySelector("canvas")! as HTMLCanvasElement;
+    const context: GPUCanvasContext | null = canvas.getContext("webgpu");
+    if (!context) {
+        throw new Error("Unable to obtain WebGPU context.");
+    }
+    context.configure({
+        device: device,
+        format: canvasFormat,
+    });
+    return context;
+}
+
+async function getDevice() {
+    if (!navigator.gpu) {
+        throw new Error("WebGPU not supported on this browser.");
+    }
+    const adapter: GPUAdapter | null = await navigator.gpu.requestAdapter();
+    if (!adapter) {
+        throw new Error("No appropriate GPUAdapter found.");
+    }
+    const device = await adapter.requestDevice();
+    return device;
+}
+
 const device = await getDevice();
 const canvasFormat: GPUTextureFormat = navigator.gpu.getPreferredCanvasFormat();
 const context: GPUCanvasContext | null = configureAndGetContext();
@@ -162,31 +187,6 @@ const simulationPipeline = device.createComputePipeline({
 
 const UPDATE_INTERVAL = 41.6666666667; // Update every 200ms (5 times/sec)
 let step = 0; // Track how many simulation steps have been run
-
-function configureAndGetContext() {
-    const canvas = document.querySelector("canvas")! as HTMLCanvasElement;
-    const context: GPUCanvasContext | null = canvas.getContext("webgpu");
-    if (!context) {
-        throw new Error("Unable to obtain WebGPU context.");
-    }
-    context.configure({
-        device: device,
-        format: canvasFormat,
-    });
-    return context;
-}
-
-async function getDevice() {
-    if (!navigator.gpu) {
-        throw new Error("WebGPU not supported on this browser.");
-    }
-    const adapter: GPUAdapter | null = await navigator.gpu.requestAdapter();
-    if (!adapter) {
-        throw new Error("No appropriate GPUAdapter found.");
-    }
-    const device = await adapter.requestDevice();
-    return device;
-}
 
 // Move all of our rendering code into a function
 function updateGrid() {
